@@ -5,6 +5,7 @@ import re
 
 app = FastAPI()
 
+# Replace with your details
 FULL_NAME = "john_doe"
 DOB = "17091999"
 EMAIL = "john@xyz.com"
@@ -25,20 +26,22 @@ async def process_data(input_data: InputData):
         sum_numbers = 0
         concat_string = ""
 
+        # Separate data
         for item in data:
-            if re.fullmatch(r"\d+", item): 
+            if item.isdigit():  # Check if item is a number (handles single digits and multi-digit numbers)
                 num = int(item)
                 if num % 2 == 0:
                     even_numbers.append(item)
                 else:
                     odd_numbers.append(item)
                 sum_numbers += num
-            elif re.fullmatch(r"[A-Za-z]+", item):  
+            elif item.isalpha():  # Check if item contains only alphabetic characters
                 alphabets.append(item.upper())
                 concat_string += item
-            else:  
+            else:  # Special characters
                 special_chars.append(item)
 
+        # Alternating caps reverse concatenation
         concat_string = concat_string[::-1]
         alt_caps = ""
         for i, ch in enumerate(concat_string):
@@ -63,3 +66,7 @@ async def process_data(input_data: InputData):
             "is_success": False,
             "error": str(e)
         }
+
+@app.get("/bfhl")
+async def get_operation_code():
+    return {"operation_code": 1}
