@@ -2,10 +2,10 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from typing import List, Union
 import re
+import json
 
 app = FastAPI()
 
-# Replace with your details
 FULL_NAME = "john_doe"
 DOB = "17091999"
 EMAIL = "john@xyz.com"
@@ -15,52 +15,58 @@ class InputData(BaseModel):
     data: List[str]
 
 @app.post("/bfhl")
-async def process_data(input_data: InputData):
+async def process_data(req: Request):
     try:
-        data = input_data.data
+        body = await req.body()
+        txt = body.decode('utf-8')
         
-        even_numbers = []
-        odd_numbers = []
-        alphabets = []
-        special_chars = []
-        sum_numbers = 0
-        concat_string = ""
+        txt = txt.replace('"', '"').replace('"', '"').replace(''', "'").replace(''', "'")
+        txt = re.sub(r'[\u201c\u201d]', '"', txt)
+        txt = re.sub(r'[\u2018\u2019]', "'", txt)
+        
+        dt = json.loads(txt)
+        inp = dt.get("data", [])
+        
+        evn = []
+        odd = []
+        alp = []
+        spc = []
+        sm = 0
+        cat = ""
 
-        # Separate data
-        for item in data:
-            if item.isdigit():  # Check if item is a number (handles single digits and multi-digit numbers)
-                num = int(item)
+        for itm in inp:
+            if itm.isdigit():
+                num = int(itm)
                 if num % 2 == 0:
-                    even_numbers.append(item)
+                    evn.append(itm)
                 else:
-                    odd_numbers.append(item)
-                sum_numbers += num
-            elif item.isalpha():  # Check if item contains only alphabetic characters
-                alphabets.append(item.upper())
-                concat_string += item
-            else:  # Special characters
-                special_chars.append(item)
+                    odd.append(itm)
+                sm += num
+            elif itm.isalpha():
+                alp.append(itm.upper())
+                cat += itm
+            else:
+                spc.append(itm)
 
-        # Alternating caps reverse concatenation
-        concat_string = concat_string[::-1]
-        alt_caps = ""
-        for i, ch in enumerate(concat_string):
-            alt_caps += ch.upper() if i % 2 == 0 else ch.lower()
+        cat = cat[::-1]
+        alt = ""
+        for i, ch in enumerate(cat):
+            alt += ch.upper() if i % 2 == 0 else ch.lower()
 
-        response = {
+        res = {
             "is_success": True,
             "user_id": f"{FULL_NAME.lower()}_{DOB}",
             "email": EMAIL,
             "roll_number": ROLL_NUMBER,
-            "odd_numbers": odd_numbers,
-            "even_numbers": even_numbers,
-            "alphabets": alphabets,
-            "special_characters": special_chars,
-            "sum": str(sum_numbers),
-            "concat_string": alt_caps
+            "odd_numbers": odd,
+            "even_numbers": evn,
+            "alphabets": alp,
+            "special_characters": spc,
+            "sum": str(sm),
+            "concat_string": alt
         }
 
-        return response
+        return res
     except Exception as e:
         return {
             "is_success": False,
