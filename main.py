@@ -1,31 +1,29 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Union
+from typing import List
 import re
 import json
 
 app = FastAPI()
 
-FULL_NAME = "john_doe"
+NAME = "john_doe"
 DOB = "17091999"
-EMAIL = "john@xyz.com"
-ROLL_NUMBER = "ABCD123"
+EML = "john@xyz.com"
+ROL = "ABCD123"
 
-class InputData(BaseModel):
+class Inp(BaseModel):
     data: List[str]
 
+def fix(txt):
+    txt = txt.replace('"', '"').replace('"', '"').replace(''', "'").replace(''', "'")
+    txt = re.sub(r'[\u201c\u201d]', '"', txt)
+    txt = re.sub(r'[\u2018\u2019]', "'", txt)
+    return txt
+
 @app.post("/bfhl")
-async def process_data(req: Request):
+async def process_data(inp: Inp):
     try:
-        body = await req.body()
-        txt = body.decode('utf-8')
-        
-        txt = txt.replace('"', '"').replace('"', '"').replace(''', "'").replace(''', "'")
-        txt = re.sub(r'[\u201c\u201d]', '"', txt)
-        txt = re.sub(r'[\u2018\u2019]', "'", txt)
-        
-        dt = json.loads(txt)
-        inp = dt.get("data", [])
+        dat = inp.data
         
         evn = []
         odd = []
@@ -34,7 +32,8 @@ async def process_data(req: Request):
         sm = 0
         cat = ""
 
-        for itm in inp:
+        for itm in dat:
+            itm = fix(itm)
             if itm.isdigit():
                 num = int(itm)
                 if num % 2 == 0:
@@ -55,9 +54,9 @@ async def process_data(req: Request):
 
         res = {
             "is_success": True,
-            "user_id": f"{FULL_NAME.lower()}_{DOB}",
-            "email": EMAIL,
-            "roll_number": ROLL_NUMBER,
+            "user_id": f"{NAME.lower()}_{DOB}",
+            "email": EML,
+            "roll_number": ROL,
             "odd_numbers": odd,
             "even_numbers": evn,
             "alphabets": alp,
