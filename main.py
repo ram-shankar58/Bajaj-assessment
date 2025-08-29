@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 FULL_NAME = "r_ram_shankar"
 DOB = "23032005"
-EMAIL = "sanjayramshankar@gmail.com"
+EMAIL = "ramshankar.r2022@vitstudent.ac.in"
 ROLL_NUMBER = "22BCE1576"
 
 class Inp(BaseModel):
